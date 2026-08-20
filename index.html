@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <title>ToggleEvent.source Example</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    #polyfill-toggle {
+      font: inherit;
+      padding: 0.5rem 0.875rem;
+      border: 1px solid #57606a;
+      border-radius: 0.375rem;
+      background: #f6f8fa;
+      cursor: pointer;
+    }
+    #polyfill-toggle:hover:not(:disabled) {
+      background: #eaeef2;
+    }
+    #polyfill-toggle:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    #polyfill-toggle[data-state="polyfilled"] {
+      border-color: #0969da;
+      background: #ddf4ff;
+      color: #0a3069;
+    }
+
+    #support {
+      margin: 1rem 0;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid;
+      border-radius: 0.375rem;
+    }
+    #support[data-state="native"] {
+      border-color: #1a7f37;
+      background: #dafbe1;
+      color: #0b4a1f;
+    }
+    #support[data-state="polyfilled"] {
+      border-color: #0969da;
+      background: #ddf4ff;
+      color: #0a3069;
+    }
+    #support[data-state="missing"] {
+      border-color: #9a6700;
+      background: #fff8c5;
+      color: #4d2d00;
+    }
+  </style>
+  <script type="module">
+    import { apply, isSupported } from "./toggle-event-source.js";
+
+    const PARAM = "polyfill";
+
+    // Read before apply(), which makes isSupported() true either way.
+    const native = isSupported();
+    const requested = new URLSearchParams(location.search).has(PARAM);
+
+    // Applied here, at the top of the page, rather than on click: the polyfill
+    // hands sources to listeners from a capture phase listener on the popover's
+    // root node, so listeners registered before it applies see a null source.
+    // That is why the button reloads with a query param instead of applying in
+    // place.
+    if (requested) apply();
+
+    const state = requested ? "polyfilled" : native ? "native" : "missing";
+
+    // Module scripts are deferred, so the page is already parsed.
+    const banner = document.getElementById("support");
+    banner.dataset.state = state;
+    banner.textContent = {
+      native:
+        "✅ This browser implements ToggleEvent.source. Every source below comes from the browser itself.",
+      polyfilled:
+        "🧩 The polyfill is applied. Every source below comes from it, not from the browser.",
+      missing:
+        "⚠️ This browser has no ToggleEvent.source and the polyfill is not applied, so every source below is null. Use the button to apply it.",
+    }[state];
+
+    const button = document.getElementById("polyfill-toggle");
+    button.dataset.state = state;
+    button.textContent = {
+      native: "No polyfill needed",
+      polyfilled: "Polyfill applied",
+      missing: "Apply polyfill",
+    }[state];
+    // Nothing to demonstrate when the browser already has it.
+    button.disabled = native;
+
+    button.addEventListener("click", () => {
+      const url = new URL(location.href);
+      url.search = requested ? "" : PARAM;
+      location.href = url.href;
+    });
+  </script>
+  <body>
+    <header>
+      <h1>ToggleEvent.source</h1>
+      <button id="polyfill-toggle" type="button">Apply polyfill</button>
+    </header>
+    <p>
+      This is a demonstration page for
+      <a href="https://github.com/jpzwarte/toggle-event-source-polyfill"
+        >github:jpzwarte/toggle-event-source-polyfill</a
+      >, which polyfills
+      <a href="https://developer.mozilla.org/en-US/docs/Web/API/ToggleEvent/source"
+        ><code>ToggleEvent.source</code></a
+      >: the element which caused a popover or <code>&lt;dialog&gt;</code> to be shown or hidden.
+    </p>
+    <p id="support">Checking for <code>ToggleEvent.source</code> support…</p>
+    <hr />
+
+    <h2>Popover</h2>
+    <button commandfor="my-popover" command="toggle-popover">Toggle with command</button>
+    <button popovertarget="my-popover">Toggle with popovertarget</button>
+    <button id="toggle-with-method">Toggle with togglePopover()</button>
+    <button id="toggle-with-source">Toggle with togglePopover({source})</button>
+
+    <div popover id="my-popover">
+      <button commandfor="my-popover" command="hide-popover">X</button>
+      This is a popover
+    </div>
+
+    <h2>Dialog</h2>
+    <button commandfor="my-dialog" command="show-modal">Open with command</button>
+    <button id="open-with-method">Open with showModal()</button>
+
+    <dialog id="my-dialog">
+      This is a dialog
+      <button commandfor="my-dialog" command="close">Close with command</button>
+      <button id="close-with-method">Close with close()</button>
+    </dialog>
+
+    <h2>Toggle events</h2>
+    <output id="log">No toggle events yet</output>
+
+    <script type="module">
+      const popover = document.getElementById("my-popover");
+      const dialog = document.getElementById("my-dialog");
+      const log = document.getElementById("log");
+
+      document.getElementById("toggle-with-method").onclick = () => popover.togglePopover();
+      document.getElementById("toggle-with-source").onclick = (event) =>
+        popover.togglePopover({ source: event.currentTarget });
+      document.getElementById("open-with-method").onclick = () => dialog.showModal();
+      document.getElementById("close-with-method").onclick = () => dialog.close();
+
+      for (const element of [popover, dialog]) {
+        element.addEventListener("toggle", (event) => {
+          const source = event.source;
+          log.textContent = `#${element.id} is ${event.newState} - source: ${
+            source ? `<${source.localName}> ${source.textContent.trim()}` : "null"
+          }`;
+        });
+      }
+    </script>
+  </body>
+</html>

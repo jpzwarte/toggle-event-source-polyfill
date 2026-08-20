@@ -1,0 +1,68 @@
+{
+  "name": "toggle-event-source-polyfill",
+  "version": "0.0.0-development",
+  "description": "This polyfills `ToggleEvent.source`, the element which caused a popover or `<dialog>` to be shown or hidden.",
+  "keywords": [
+    "command",
+    "commandfor",
+    "dialog",
+    "invokers",
+    "polyfill",
+    "popover",
+    "toggleevent"
+  ],
+  "homepage": "https://github.com/jpzwarte/toggle-event-source-polyfill#readme",
+  "bugs": {
+    "url": "https://github.com/jpzwarte/toggle-event-source-polyfill/issues"
+  },
+  "license": "MIT",
+  "author": "Jeroen Zwartepoorte",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jpzwarte/toggle-event-source-polyfill.git"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "toggle-event-source.js",
+    "toggle-event-source.d.ts",
+    "toggle-event-source.min.js"
+  ],
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "typesVersions": {
+    "*": {
+      "fn": [
+        "./toggle-event-source.d.ts"
+      ]
+    }
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "browser": "./toggle-event-source.min.js",
+      "require": "./toggle-event-source.min.js"
+    },
+    "./fn": {
+      "types": "./toggle-event-source.d.ts",
+      "import": "./toggle-event-source.js"
+    }
+  },
+  "scripts": {
+    "start": "node scripts/start.js",
+    "dev": "vite",
+    "minify": "esbuild --bundle --minify index.js > toggle-event-source.min.js",
+    "prepublishOnly": "npm run minify",
+    "format": "oxfmt .",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2",
+    "esbuild": "^0.28.2",
+    "oxfmt": "^0.64.0",
+    "vite": "^8.2.2"
+  }
+}
