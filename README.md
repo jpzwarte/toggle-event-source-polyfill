@@ -1,5 +1,7 @@
 # ToggleEvent.source Polyfill
 
+[![Node CI](https://github.com/jpzwarte/toggle-event-source-polyfill/actions/workflows/test.yml/badge.svg)](https://github.com/jpzwarte/toggle-event-source-polyfill/actions/workflows/test.yml)
+
 This polyfills [`ToggleEvent.source`](https://developer.mozilla.org/en-US/docs/Web/API/ToggleEvent/source):
 the element which caused a popover or `<dialog>` to be shown or hidden.
 
@@ -166,6 +168,14 @@ expected to support, so an accidental upgrade fails loudly instead of quietly
 testing nothing.
 
 `npm run test:ui` opens Playwright's UI mode.
+
+## Releasing
+
+Publishing runs from `.github/workflows/publish.yml` when a GitHub release is
+created. **It is currently a dry run**: it builds and validates the package and
+reports what it would publish, without publishing anything. It can also be
+started by hand from the Actions tab. To publish for real, drop `--dry-run` from
+its last step, along with the `workflow_dispatch` trigger.
 
 ## Acknowledgements
 
