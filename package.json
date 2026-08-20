@@ -1,6 +1,6 @@
 {
   "name": "toggle-event-source-polyfill",
-  "version": "0.0.0-development",
+  "version": "0.0.1",
   "description": "This polyfills `ToggleEvent.source`, the element which caused a popover or `<dialog>` to be shown or hidden.",
   "keywords": [
     "command",

@@ -3,15 +3,14 @@ name: Publish
 on:
   release:
     types: [created]
-  # So the job can be exercised from the Actions tab without cutting a release.
-  workflow_dispatch:
 
 jobs:
   publish-npm:
-    name: Publish to npm (dry run)
+    name: Publish to npm
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      # Required for trusted publishing and for provenance.
       id-token: write
     steps:
       - uses: actions/checkout@v7
@@ -23,13 +22,10 @@ jobs:
       - run: npx playwright install --with-deps webkit chromium
       - run: npm test
       - run: npm run minify
-      # A manual run has no release tag, so fall back to a throwaway version.
-      # It must not be a prerelease: npm refuses to publish one without --tag.
-      - run: npm version ${TAG_NAME:-0.0.${{ github.run_number }}} --git-tag-version=false
+      # The published version comes from the release tag, so package.json keeps
+      # a placeholder version in git.
+      - run: npm version ${TAG_NAME} --git-tag-version=false
         env:
           TAG_NAME: ${{ github.event.release.tag_name }}
-      # DRY RUN: builds the tarball and reports what would be published, without
-      # publishing it. To publish for real, drop --dry-run from this step, drop
-      # the workflow_dispatch trigger above, and drop "(dry run)" from the job
-      # name. Note that a dry run does not verify npm authentication.
-      - run: npm --ignore-scripts publish --provenance --access public --dry-run
+      # prepublishOnly is skipped, so minify ran explicitly above.
+      - run: npm --ignore-scripts publish --provenance --access public
